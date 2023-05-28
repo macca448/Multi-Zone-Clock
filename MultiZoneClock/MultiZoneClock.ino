@@ -49,8 +49,8 @@ SSD1306Spi display(RES, DC, CS);
 OLEDDisplayUi ui ( &display );
 
 
-const char* ssid     = "MillFlat_El_Rancho";
-const char* password = "140824500925";
+const char* ssid     = "Your WiFi SSID";
+const char* password = "Your WiFi Password";
 int screenW = 128;
 int screenH = 64;
 int clockCenterX = screenW / 2;
