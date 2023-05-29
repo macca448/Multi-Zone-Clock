@@ -42,19 +42,19 @@
 #include "SSD1306Spi.h"
 #include "OLEDDisplayUi.h"
 #include "images.h"
-#define WAKE  0                     // This is the BOOT/FLASH button on a Dev Board
+#define WAKE  34
 #define RES   27
 #define DC    4
 #define CS    5
-#define FPS   60
+#define FPS   30
 SSD1306Spi display(RES, DC, CS);
 OLEDDisplayUi ui ( &display );
 
 #define ON  true
 #define OFF false
 
-const char* ssid     = "MillFlat_El_Rancho";
-const char* password = "140824500925";
+const char* ssid     = "Your_SSID";
+const char* password = "Your_Password";
 int screenW = 128;
 int screenH = 64;
 int clockCenterX = screenW / 2;
@@ -110,21 +110,26 @@ bool ntpUpdate(void){
 
 void loop2(void *pvParameters){    // Core 1 loop - User tasks - Display
   while (1){
-    int remainingTimeBudget;
-    if(screen){  
-      remainingTimeBudget = ui.update();
-    }else{
-      remainingTimeBudget = 1;
-    }
-    if (remainingTimeBudget > 0) {
-      btnState = digitalRead(WAKE);
 
-      if(btnState != lastBtnState){
+    int remainingTimeBudget = ui.update();
+
+    if (remainingTimeBudget > 0) {
+      //Do stuff here
+      delay(remainingTimeBudget);
+    }
+  }
+}
+
+void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
+  while (1){      
+    
+    btnState = digitalRead(WAKE);
+    if(btnState != lastBtnState){
         press = ON;
         previousTime = millis();
-      }
-      
-      if(millis() - previousTime >= 50){
+    }
+    
+    if(millis() - previousTime >= 50){
         if(press){
           if(btnState == 0){
             if(!screen){
@@ -143,17 +148,7 @@ void loop2(void *pvParameters){    // Core 1 loop - User tasks - Display
           press = OFF;
         }
       }
-      if(screen){
-        delay(remainingTimeBudget);
-      }
-      lastBtnState = btnState;
-    }
-  }
-}
 
-void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
-  while (1){      
-    
     if(hour() != zones.utcLastHour){
       zones.update = true;
       zones.utcLastHour = hour();
@@ -189,6 +184,7 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
           display.displayOff();
         }
     }
+    lastBtnState = btnState;
     delay(1);
   }
 }
