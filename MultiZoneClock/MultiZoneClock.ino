@@ -136,7 +136,7 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
     if(millis() - previousTime >= 50){
       if(press){
         if(btnState == 0){
-          if(!screen)
+          if(!screen){
             screen = ON;
             screenTimeOut = 0;
             display.resetDisplay();
@@ -145,7 +145,8 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
             screen = OFF;
             display.displayOff();
           }
-          press = OFF;
+        }
+        press = OFF;
       }
     }
     
