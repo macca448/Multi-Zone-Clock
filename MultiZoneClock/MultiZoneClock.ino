@@ -42,7 +42,7 @@
 #include "SSD1306Spi.h"
 #include "OLEDDisplayUi.h"
 #include "images.h"
-#define WAKE  35
+#define WAKE  0                     // This is the BOOT/FLASH button on a Dev Board
 #define RES   27
 #define DC    4
 #define CS    5
@@ -110,45 +110,49 @@ bool ntpUpdate(void){
 
 void loop2(void *pvParameters){    // Core 1 loop - User tasks - Display
   while (1){
-    if(screen){
-      
-      int remainingTimeBudget = ui.update();
+    int remainingTimeBudget;
+    if(screen){  
+      remainingTimeBudget = ui.update();
+    }else{
+      remainingTimeBudget = 1;
+    }
+    if (remainingTimeBudget > 0) {
+      btnState = digitalRead(WAKE);
 
-        if (remainingTimeBudget > 0) {
-          // You can do some work here
-          // Don't do stuff if you are below your
-          // time budget.
-          delay(remainingTimeBudget);
+      if(btnState != lastBtnState){
+        press = ON;
+        previousTime = millis();
+      }
+      
+      if(millis() - previousTime >= 50){
+        if(press){
+          if(btnState == 0){
+            if(!screen){
+              screen = ON;
+              screenTimeOut = 0;
+              display.resetDisplay();
+              display.displayOn();
+              ui.enableAutoTransition();
+              ui.setAutoTransitionForwards();
+            }else{
+              screen = OFF;
+              display.clear();
+              display.displayOff();
+            }
+          }
+          press = OFF;
         }
+      }
+      if(screen){
+        delay(remainingTimeBudget);
+      }
+      lastBtnState = btnState;
     }
   }
 }
 
 void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
-  while (1){
-    
-    btnState = digitalRead(WAKE);
-
-    if(btnState != lastBtnState){
-      press = ON;
-      previousTime = millis();
-    }
-    if(millis() - previousTime >= 50){
-      if(press){
-        if(btnState == 0){
-          if(!screen){
-            screen = ON;
-            screenTimeOut = 0;
-            display.resetDisplay();
-            display.displayOn();
-          }else{
-            screen = OFF;
-            display.displayOff();
-          }
-        }
-        press = OFF;
-      }
-    }
+  while (1){      
     
     if(hour() != zones.utcLastHour){
       zones.update = true;
@@ -168,7 +172,6 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
       zones.update = false;
     }
     
-    
     if(minute() != zones.utcLastMin){
       zones.minCounter++;
       screenTimeOut++;
@@ -182,11 +185,11 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
         }
         if(screenTimeOut >= SCREEN_OFF){
           screen = OFF;
+          display.clear();
           display.displayOff();
         }
     }
-  lastBtnState = btnState;
-  delay(1);
+    delay(1);
   }
 }
 
