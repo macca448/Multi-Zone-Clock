@@ -29,3 +29,5 @@ There are `Seven (7)` display screens. The first is all three `times` prefixed w
 I have added the ability to change the page `display time` and `trasition time` if the default doesn't suit.
 
 The `framerate` is set at `60` which is about the max (I think) 
+
+A `WAKE` button has been included along with a `4 minute` display `OFF` timeout.
