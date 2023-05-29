@@ -30,4 +30,4 @@ I have added the ability to change the page `display time` and `trasition time` 
 
 The `framerate` is set at `60` which is about the max (I think) 
 
-A `WAKE` button has been included along with a `4 minute` display `OFF` timeout.
+A `WAKE` button has been included along with a `4 minute` display `OFF` timeout. It uses `pin 0` which is the `BOOT/FLASH` button on a Dev board.
