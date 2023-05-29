@@ -130,24 +130,20 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
     }
     
     if(millis() - previousTime >= 50){
-        if(press){
-          if(btnState == 0){
-            if(!screen){
-              screen = ON;
-              screenTimeOut = 0;
-              display.resetDisplay();
-              display.displayOn();
-              ui.enableAutoTransition();
-              ui.setAutoTransitionForwards();
-            }else{
-              screen = OFF;
-              display.clear();
-              display.displayOff();
+      if(press){
+        if(btnState == 0){
+          if(!screen){
+            screen = ON;
+            screenTimeOut = 0;
+            display.resetDisplay();
+            display.displayOn();
+            ui.enableAutoTransition();
+            ui.setAutoTransitionForwards();
             }
           }
           press = OFF;
         }
-      }
+    }
 
     if(hour() != zones.utcLastHour){
       zones.update = true;
