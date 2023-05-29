@@ -28,6 +28,6 @@ There are `Seven (7)` display screens. The first is all three `times` prefixed w
 
 I have added the ability to change the page `display time` and `trasition time` if the default doesn't suit.
 
-The `framerate` is set at `60` which is about the max (I think) 
+The `framerate` is backed off to `30fps` so we can have a `WAKE` button.
 
-A `WAKE` button has been included along with a `4 minute` display `OFF` timeout. It uses `pin 0` which is the `BOOT/FLASH` button on a Dev board.
+The `display` timesout and sleeps after `4 minutes`. Make sure you set the right button.
