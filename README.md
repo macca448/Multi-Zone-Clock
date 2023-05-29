@@ -24,7 +24,7 @@ Because the three `timezones` have the same `minute` and `second` we only need t
 
 `NTP Org's` Terms of Service suggest randomizing `NTP updates`. We have done this using a `random` minute value. It's set quite small for testing but should be fine set to say `RAN_MIN 64` and `RAN_MAX 73` or maybe even longer.
 
-There are `Seven (7)` display screens. The first is all three `times` prefixed with `Zone & Day`. The next page is a `UTC` Analog Clock the `UTC` as a Digital Clock. This repeats for the other two timezones.
+There are `Seven (7)` display screens. The first is all three `times` prefixed with `Zone & Day`. The next page is a `UTC` Analog Clock then `UTC` as a Digital Clock. This repeats for the other two timezones then the loop starts over.
 
 I have added the ability to change the page display time and trasition time if the default doesn't suit.
 
