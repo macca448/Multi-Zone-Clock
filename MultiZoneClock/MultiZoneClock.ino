@@ -32,8 +32,9 @@
   
 */
 
-#define RAN_MIN   13              // Random Minimum for NTP Update timing
-#define RAN_MAX   27              // Random Maximum for NTP Update timing
+#define RAN_MIN    13              // Random Minimum for NTP Update timing
+#define RAN_MAX    27              // Random Maximum for NTP Update timing
+#define SCREEN_OFF 4               // Screen Timeout in Minutes
 
 #include <WiFi.h> 
 #include <TimeLib.h>
@@ -41,21 +42,28 @@
 #include "SSD1306Spi.h"
 #include "OLEDDisplayUi.h"
 #include "images.h"
-#define RES 27
-#define DC  4
-#define CS  5
-#define FPS 60
+#define WAKE  35
+#define RES   27
+#define DC    4
+#define CS    5
+#define FPS   60
 SSD1306Spi display(RES, DC, CS);
 OLEDDisplayUi ui ( &display );
 
+#define ON  true
+#define OFF false
 
-const char* ssid     = "Your WiFi SSID";
-const char* password = "Your WiFi Password";
+const char* ssid     = "MillFlat_El_Rancho";
+const char* password = "140824500925";
 int screenW = 128;
 int screenH = 64;
 int clockCenterX = screenW / 2;
 int clockCenterY = ((screenH - 16) / 2) + 16; 
 int clockRadius = 23;
+
+uint8_t screenTimeOut = 0;
+bool press = OFF, btnState, lastBtnState = ON, screen = ON;
+uint32_t previousTime = 0;
 
 struct ZONES{
   char utcWday[12];
@@ -102,23 +110,50 @@ bool ntpUpdate(void){
 
 void loop2(void *pvParameters){    // Core 1 loop - User tasks - Display
   while (1){
-    int remainingTimeBudget = ui.update();
+    if(screen){
+      
+      int remainingTimeBudget = ui.update();
 
-      if (remainingTimeBudget > 0) {
-        // You can do some work here
-        // Don't do stuff if you are below your
-        // time budget.
-        delay(remainingTimeBudget);
-      }
+        if (remainingTimeBudget > 0) {
+          // You can do some work here
+          // Don't do stuff if you are below your
+          // time budget.
+          delay(remainingTimeBudget);
+        }
+    }
   }
 }
 
 void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
   while (1){
+    
+    btnState = digitalRead(WAKE);
+
+    if(btnState != lastBtnState){
+      press = ON;
+      previousTime = millis();
+    }
+    if(millis() - previousTime >= 50){
+      if(press){
+        if(btnState == 0){
+          if(!screen)
+            screen = ON;
+            screenTimeOut = 0;
+            display.resetDisplay();
+            display.displayOn();
+          }else{
+            screen = OFF;
+            display.displayOff();
+          }
+          press = OFF;
+      }
+    }
+    
     if(hour() != zones.utcLastHour){
       zones.update = true;
       zones.utcLastHour = hour();
     }
+    
     if(zones.update){
       zones.epoch = now();
       getUtcWday(zones.utcWday);
@@ -131,8 +166,11 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
       zones.useHour = getUseHour();
       zones.update = false;
     }
+    
+    
     if(minute() != zones.utcLastMin){
       zones.minCounter++;
+      screenTimeOut++;
       zones.utcLastMin = minute();
         if(zones.minCounter >= zones.randomMin){
           zones.minCounter = 0;
@@ -141,14 +179,19 @@ void loop1(void *pvParameters){    // Core 0 loop - User tasks - Time
               ESP.restart();
             }
         }
+        if(screenTimeOut >= SCREEN_OFF){
+          screen = OFF;
+          display.displayOff();
+        }
     }
-
+  lastBtnState = btnState;
   delay(1);
   }
 }
 
 void setup() {
   randomSeed(analogRead(A0));
+  pinMode(WAKE, INPUT_PULLUP);
   ui.setTargetFPS(FPS);
   ui.setActiveSymbol(activeSymbol);
   ui.setInactiveSymbol(inactiveSymbol);
@@ -157,6 +200,8 @@ void setup() {
   ui.setFrameAnimation(SLIDE_LEFT);
   ui.setFrames(frames, frameCount);
   ui.setOverlays(overlays, overlaysCount);
+  //ui.setTimePerFrame(5000);					//If you want to change from default
+  //ui.setTimePerTransition(500);				//If you want to change from default
   ui.init();
   display.flipScreenVertically();
   configTime(0, 0, "pool.ntp.org", "time.nist.gov");
